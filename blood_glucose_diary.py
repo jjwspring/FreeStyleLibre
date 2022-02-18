@@ -13,6 +13,13 @@ class BloodGlucoseDiary:
         self.notes = pd.Series(dtype='string')
         self.start_time = None
         self.end_time = None
+        self.colors = {'BG':'#e03c2d',
+                      'QA':'#e88e33',
+                      'BI':'#339de8',
+                      'carbs':'#e3d27d',
+                      'insulin':'k'
+                       }
+
 
     def load_from_csv(self, filepath):
         header = pd.read_csv(filepath, nrows=0).columns
@@ -46,23 +53,35 @@ class BloodGlucoseDiary:
                                                 self.notes.index)))
 
     def plot(self, start_time=None, end_time=None):
-        fig, ax = plt.subplots()
+        fig, glucose_ax = plt.subplots()
+        fig.subplots_adjust(right=0.75)
+        insulin_ax = glucose_ax.twinx()
+        carbs_ax = glucose_ax.twinx()
+        carbs_ax.spines.right.set_position(('axes', 1.2))
 
         if start_time is None:
             start_time = self.start_time
         if end_time is None:
             end_time = self.end_time
 
-        self.BG.plot(ax=ax)
-        ax.scatter(self.QA.index, np.full_like(self.QA, ax.get_ylim()[1]))
+        self.BG.plot(ax=glucose_ax, color=self.colors['BG'])
+        insulin_ax.scatter(self.QA.index, self.QA.fillna(-1), color=self.colors['QA'])
+        insulin_ax.scatter(self.BI.index, self.BI.fillna(-1), color=self.colors['BI'])
+        carbs_ax.scatter(self.carbs.index, self.carbs.fillna(-1), color=self.colors['carbs'])
 
-        ax.set_xlim((start_time, end_time))
+        glucose_ax.set_xlim((start_time, end_time))
+        glucose_ax.set_ylabel('Blood glucose mmol/l', color=self.colors['BG'])
+        glucose_ax.tick_params(axis='y', colors=self.colors['BG'])
+        insulin_ax.set_ylabel('Insulin u', color=self.colors['insulin'])
+        insulin_ax.tick_params(axis='y', colors=self.colors['insulin'])
+        carbs_ax.set_ylabel('Carbs g', color=self.colors['carbs'])
+        carbs_ax.tick_params(axis='y', colors=self.colors['carbs'])
 
-
+        return fig, glucose_ax, insulin_ax, carbs_ax
 
 
 if __name__ == '__main__':
     my_bgdiary = BloodGlucoseDiary()
     my_bgdiary.load_from_csv('test_data.csv')
-    my_bgdiary.plot()
+    my_bgdiary.plot(start_time=pd.to_datetime('2021-07-06'), end_time=pd.to_datetime('2021-07-08'))
     plt.show()
