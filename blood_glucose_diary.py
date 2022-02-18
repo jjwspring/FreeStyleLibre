@@ -26,7 +26,7 @@ class BloodGlucoseDiary:
         self.end_time = pd.to_datetime(header[2], format=r'%d-%m-%Y %H:%M %Z')
 
         table = pd.read_csv(filepath, skiprows=1, index_col=2)
-        table.index = pd.to_datetime(table.index, format=r'%d/%m/%Y %H:%M')
+        table.index = pd.to_datetime(table.index, format=r'%d-%m-%Y %H:%M')
 
         historic_bg = table.loc[table['Record Type'] == 0, r'Historic Glucose mmol/L']
         scan_bg = table.loc[table['Record Type'] == 1, 'Scan Glucose mmol/L']
@@ -82,6 +82,6 @@ class BloodGlucoseDiary:
 
 if __name__ == '__main__':
     my_bgdiary = BloodGlucoseDiary()
-    my_bgdiary.load_from_csv('test_data.csv')
+    my_bgdiary.load_from_csv('JoelWilliams_glucose_1-2-2022.csv')
     my_bgdiary.plot(start_time=pd.to_datetime('2021-07-06'), end_time=pd.to_datetime('2021-07-08'))
     plt.show()
