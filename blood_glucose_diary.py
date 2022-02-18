@@ -13,13 +13,12 @@ class BloodGlucoseDiary:
         self.notes = pd.Series(dtype='string')
         self.start_time = None
         self.end_time = None
-        self.colors = {'BG':'#e03c2d',
-                      'QA':'#e88e33',
-                      'BI':'#339de8',
-                      'carbs':'#e3d27d',
-                      'insulin':'k'
+        self.colors = {'BG': '#147a20',
+                       'QA': '#fc7a00',
+                       'BI': '#00c1d6',
+                       'carbs': '#b38f00',
+                       'insulin': 'k'
                        }
-
 
     def load_from_csv(self, filepath):
         header = pd.read_csv(filepath, nrows=0).columns
@@ -47,10 +46,10 @@ class BloodGlucoseDiary:
         self.notes = table['Notes'].dropna()
 
         self.start_time = np.min(np.concatenate((self.BG.index,
-                                                self.QA.index,
-                                                self.BI.index,
-                                                self.carbs.index,
-                                                self.notes.index)))
+                                                 self.QA.index,
+                                                 self.BI.index,
+                                                 self.carbs.index,
+                                                 self.notes.index)))
 
     def plot(self, start_time=None, end_time=None):
         fig, glucose_ax = plt.subplots()
@@ -69,6 +68,17 @@ class BloodGlucoseDiary:
         insulin_ax.scatter(self.BI.index, self.BI.fillna(-1), color=self.colors['BI'])
         carbs_ax.scatter(self.carbs.index, self.carbs.fillna(-1), color=self.colors['carbs'])
 
+        glucose_ax.fill_between([self.start_time, self.end_time], 4, 10,
+                                linewidth=0, color=self.colors['BG'], alpha=0.2)
+
+        x = self.BG.resample(pd.Timedelta(1, 'h')).mean()
+        y = glucose_ax.get_ylim()
+        glucose_ax.fill_between(x.index, y[0], y[1],
+                                where=(x.index.time >= pd.to_datetime('23:00').time()) |
+                                      (x.index.time <= pd.to_datetime('07:00').time()),
+                                linewidth=0, color='k', alpha=0.1)
+        glucose_ax.set_ylim(y)
+
         glucose_ax.set_xlim((start_time, end_time))
         glucose_ax.set_ylabel('Blood glucose mmol/l', color=self.colors['BG'])
         glucose_ax.tick_params(axis='y', colors=self.colors['BG'])
@@ -82,6 +92,6 @@ class BloodGlucoseDiary:
 
 if __name__ == '__main__':
     my_bgdiary = BloodGlucoseDiary()
-    my_bgdiary.load_from_csv('JoelWilliams_glucose_1-2-2022.csv')
-    my_bgdiary.plot(start_time=pd.to_datetime('2021-07-06'), end_time=pd.to_datetime('2021-07-08'))
+    my_bgdiary.load_from_csv('test_data.csv')
+    my_bgdiary.plot(start_time=pd.to_datetime('2022-01-29'), end_time=pd.to_datetime('2022-01-31'))
     plt.show()
