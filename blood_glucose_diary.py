@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 
 
 class BloodGlucoseDiary:
@@ -25,21 +27,42 @@ class BloodGlucoseDiary:
 
         self.QA = table.loc[pd.notna(table['Rapid-Acting Insulin (units)']), r'Rapid-Acting Insulin (units)']
         QA_non_numeric = table['Non-numeric Rapid-Acting Insulin'].dropna()
-        self.QA = pd.concat((self.QA, QA_non_numeric.replace(1, pd.NA)))
+        self.QA = pd.concat((self.QA, QA_non_numeric.replace(1, np.nan)))
 
         self.BI = table.loc[pd.notna(table['Long-Acting Insulin (units)']), r'Long-Acting Insulin (units)']
         BI_non_numeric = table['Non-numeric Long-Acting Insulin'].dropna()
-        self.BI = pd.concat((self.BI, BI_non_numeric.replace(1, pd.NA)))
+        self.BI = pd.concat((self.BI, BI_non_numeric.replace(1, np.nan)))
 
         self.carbs = table.loc[pd.notna(table['Carbohydrates (grams)']), r'Carbohydrates (grams)']
         carbs_non_numeric = table['Non-numeric Food'].dropna()
-        self.carbs = pd.concat((self.carbs, carbs_non_numeric.replace(1, pd.NA)))
+        self.carbs = pd.concat((self.carbs, carbs_non_numeric.replace(1, np.nan)))
 
         self.notes = table['Notes'].dropna()
 
-        print()
+        self.start_time = np.min(np.concatenate((self.BG.index,
+                                                self.QA.index,
+                                                self.BI.index,
+                                                self.carbs.index,
+                                                self.notes.index)))
+
+    def plot(self, start_time=None, end_time=None):
+        fig, ax = plt.subplots()
+
+        if start_time is None:
+            start_time = self.start_time
+        if end_time is None:
+            end_time = self.end_time
+
+        self.BG.plot(ax=ax)
+        ax.scatter(self.QA.index, np.full_like(self.QA, ax.get_ylim()[1]))
+
+        ax.set_xlim((start_time, end_time))
+
+
+
 
 if __name__ == '__main__':
     my_bgdiary = BloodGlucoseDiary()
     my_bgdiary.load_from_csv('test_data.csv')
-
+    my_bgdiary.plot()
+    plt.show()
