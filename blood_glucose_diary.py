@@ -89,6 +89,12 @@ class BloodGlucoseDiary:
 
         return fig, glucose_ax, insulin_ax, carbs_ax
 
+# todo  Write function for insulin profiles
+# todo  Write function to predict insulin activity
+# todo  Same for carbohydrate
+# todo  Figure out resampling
+# todo  Get change in blood glucose
+# todo  New plot function to compare insulin activity, carb release and change in blood glucose
 
 if __name__ == '__main__':
     my_bgdiary = BloodGlucoseDiary()
